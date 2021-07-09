@@ -27,7 +27,7 @@ sys_exit1(void)
 
   if(argint(0, &pid) < 0)
     return -1;
-  exit1(0);
+  exit1(pid);
   return 0;
 
 }
@@ -38,6 +38,12 @@ sys_wait(void)
 {
   return wait();
 }
+int
+sys_wait1(void)
+{
+  return wait();
+}
+
 
 int
 sys_kill(void)
