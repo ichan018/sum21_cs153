@@ -38,11 +38,6 @@ sys_wait(void)
 {
   return wait();
 }
-int
-sys_wait1(void)
-{
-  return wait();
-}
 
 
 int
