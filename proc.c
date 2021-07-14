@@ -455,7 +455,10 @@ wait1(int *status)
         p->name[0] = 0;
         p->killed = 0;
         p->state = UNUSED;
-        *status = p->exitStatus;
+        if(status){
+           *status = p->exitStatus;
+        }
+        p->exitStatus = 0; 
         release(&ptable.lock);
         return pid;
       }
