@@ -182,6 +182,7 @@ UPROGS=\
 	_wc\
 	_zombie\
 	_exit1\
+        _waitpid\
 
 fs.img: mkfs README $(UPROGS)
 	./mkfs fs.img README $(UPROGS)
