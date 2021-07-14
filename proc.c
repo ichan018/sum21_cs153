@@ -363,20 +363,21 @@ wait(void)
     sleep(curproc, &ptable.lock);  //DOC: wait-sleep
   }
 }
-
+/*
+ * havekids variable not needed
+ * pid variable removed from inside of waitpid() function
+ */
 
 int
 waitpid(int pid, int *status, int options)
 {
   struct proc *p;
-  //int havekids, pid;
   struct proc *curproc = myproc();
   int foundPid = 0;  
 
   acquire(&ptable.lock);
   for(;;){
     // Scan through table looking for exited children.
-  //  havekids = 0;
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       //if(p->parent != curproc)
       //  continue;
