@@ -123,6 +123,7 @@ void            wakeup(void*);
 void            yield(void);
 void		exit1(int);
 int             wait1(int*);
+//void		debug(void);
 
 // swtch.S
 void            swtch(struct context**, struct context*);

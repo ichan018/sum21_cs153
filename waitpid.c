@@ -5,6 +5,7 @@
 #include "stat.h"
 #include "user.h"
 
+#define NULL 0
 #define N  1000
 /*
 void
@@ -32,9 +33,19 @@ forktest(void)
        options = 0;
        status = 10;
        waitVal = waitpid(22,&status, options); 
-       printf(1, "parent of %d , status : %d, waitval %d \n", pid, status, waitVal);
+       printf(1, "parent of 22, status : %d, waitval %d \n", status, waitVal);
        waitVal = waitpid(pid,&status, options); 
        printf(1, "parent of %d , status : %d, waitval %d \n", pid, status, waitVal);
+       pid = fork();
+
+       if(pid < 0)
+         exit();
+       if(pid == 0){
+         exit();
+       }else {
+          waitVal = waitpid(pid,NULL, options); 
+          printf(1, "parent of %d , status : NULL, waitval %d \n", pid, waitVal);
+       }
     }
   //}
 /*

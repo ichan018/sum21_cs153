@@ -8,7 +8,7 @@
 #include "syscall.h"
 
 // User code makes a system call with INT T_SYSCALL.
-// System call number in %eax.
+// System call number in %eax
 // Arguments on the stack, from the user call to the C
 // library system call function. The saved user %esp points
 // to a saved program counter, and then the first argument.
@@ -106,6 +106,7 @@ extern int sys_write(void);
 extern int sys_uptime(void);
 extern int sys_exit1(void);
 extern int sys_wait1(void);
+//extern int sys_debug(void);
 
 static int (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
@@ -132,6 +133,8 @@ static int (*syscalls[])(void) = {
 [SYS_close]   sys_close,
 [SYS_exit1]   sys_exit1,
 [SYS_wait1]   sys_wait1,
+//[SYS_debug]   sys_debug,
+
 };
 
 void

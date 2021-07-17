@@ -51,9 +51,11 @@ sys_waitpid(void)
 
   if(argptr(1,(void*) &status,sizeof(int)) < 0)
     return -1;
+  
   if(argint(2, &options) < 0)
     return -1;
-  return waitpid(pid,status,options); // fix later
+
+  return waitpid(pid,status,options); 
 }
 
 int
@@ -130,3 +132,11 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+/*
+int
+sys_debug(void)
+{
+    debug();
+    return 0;
+}
+*/

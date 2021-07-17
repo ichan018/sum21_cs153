@@ -6,6 +6,7 @@
 #include "x86.h"
 #include "proc.h"
 #include "spinlock.h"
+//#include "printf.c" //added line for printint()
 
 struct {
   struct spinlock lock;
@@ -282,7 +283,7 @@ exit1(int status)
   struct proc *p;
   int fd;
 
-  curproc->exitStatus = status; //exitStatus field gets status
+  curproc->exitStatus = status; //Edit: exitStatus field gets status
 
   if(curproc == initproc)
     panic("init exiting");
@@ -379,18 +380,12 @@ waitpid(int pid, int *status, int options)
   for(;;){
     // Scan through table looking for exited children.
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-      //if(p->parent != curproc)
-      //  continue;
-    //  havekids = 1;
-
-    //if(p->state == ZOMBIE){
-  
         if(p->pid == pid){ 
+            //A PID in ptable matches pid in argument
             foundPid = 1;
             if (p->state == ZOMBIE){
             // Found one.
             
- //               pid = p->pid;
                 kfree(p->kstack);
                 p->kstack = 0;
                 freevm(p->pgdir);
@@ -399,16 +394,19 @@ waitpid(int pid, int *status, int options)
                 p->name[0] = 0;
                 p->killed = 0;
                 p->state = UNUSED;
-		               
-                *status = p->exitStatus;
-	        p->exitStatus = 0;	               
+		
+                if(status)               
+                    *status = p->exitStatus;
+	        
+		p->exitStatus = 0;	               
                 
                 release(&ptable.lock);
                 return pid;
             }else{
     
                 if(curproc->killed){
-                  *status = p->exitStatus;
+                  if(status)
+                     *status = p->exitStatus;
                   release(&ptable.lock);
                   return -1;
                 }
@@ -418,9 +416,10 @@ waitpid(int pid, int *status, int options)
             }
         }
       }
-      //pid is not found
+      //Edit: case:pid is not found
       if (!foundPid){
-          *status = -1;
+          if(status)
+		*status = -1;
           release(&ptable.lock);
           return -1;
       }
@@ -697,6 +696,13 @@ procdump(void)
     cprintf("\n");
   }
 }
+/*
+void
+debug(void){
+    //printint(1, "PID:%d\n", myproc()->pid);
+}
+*/
+
 /*
 void
 hello(void){
