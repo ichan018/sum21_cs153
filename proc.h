@@ -50,7 +50,7 @@ struct proc {
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
   int exitStatus;              // exitStatus of the proc (LAB 1)
-  struct proc *waitpidCaller;  // Caller process for waitpid
+  struct proc *waitpidCaller;  // Caller process for waitpid (If waitpid caller is changed, exitStatus is 100.
 };
 
 // Process memory is laid out contiguously, low addresses first:

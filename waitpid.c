@@ -27,12 +27,12 @@ main(void)
    
     options = 0;
     status = 10;
-    waitVal = waitpid(12345,&status, options); 
+    waitVal = waitpid(12345,&status, options);  //constant 12345 may be changed to any other constant
     printf(1, "Waitpid output: Nonexistent PID: 12345, exit status : %d, return value: %d \n", status, waitVal);
     
     waitVal = waitpid(pid1,&status, options); 
     printf(1, "Waitpid output: PID: %d , exit status : %d, return value: %d \n", pid1, status, waitVal);
-
+    //Test #2: NULL check
     pid2 = fork();
     if(pid2 < 0)
       exit();
@@ -42,7 +42,7 @@ main(void)
       exit();
     }
     
-    waitVal = waitpid(pid2,NULL, options); 
+    waitVal = waitpid(pid2,NULL, options);//tests whether waitpid works with NULL as status 
     printf(1, "Waitpid output: PID: %d , exit status : NULL, return value: %d \n", pid2, waitVal);
 
     pid3 = fork();
@@ -59,7 +59,7 @@ main(void)
       exit();
     if(pid4 == 0){
        pid4 = getpid();
-       
+      //see if waitpid works normally 
        options = 0;
        status = 10;
        waitVal = waitpid(pid3,&status, options); 

@@ -380,7 +380,7 @@ waitpid(int pid, int *status, int options)
 {
   struct proc *p;
   struct proc *curproc = myproc();
-  int foundPid = 0;  
+  int foundPid = 0; //foundPid is 1 when pid is in ptable 
 
   acquire(&ptable.lock);
   for(;;){
@@ -420,24 +420,24 @@ waitpid(int pid, int *status, int options)
                 
                 // If the current process is not the parent, set a special flag through exitStatus and save the current process in the waitpidCaller to be used by exit function.
                 if(p->parent != curproc){
-                    p->exitStatus = 100;
-                    p->waitpidCaller = curproc;
+                    p->exitStatus = 100; //constant 100 may be changed to another constant
+                    p->waitpidCaller = curproc; 
                 }
 
                 // Wait for children to exit.  (See wakeup1 call in proc_exit.)
                 sleep(curproc, &ptable.lock);  //DOC: wait-sleep
                 break;
             }
-        }
-      }
-      //Edit: case:pid is not found
-      if (!foundPid){
+        } //end of if statment that checks for PID
+      } //end of for loop that searches through ptable
+      
+      if (!foundPid){ //pid not found
           if(status)
 		*status = -1;
           release(&ptable.lock);
           return -1;
       }
-    }
+    } //end of outer for loop
 }
 
 // part b 
