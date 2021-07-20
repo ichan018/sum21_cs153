@@ -259,6 +259,12 @@ exit()
   // Parent might be sleeping in wait().
   wakeup1(curproc->parent);
 
+  //if a non-parent process is sleeping in waitpid, wake it up.
+  if (curproc->exitStatus == 100){
+      wakeup1(curproc->waitpidCaller);
+      curproc->exitStatus = 5; //reset exitStatus to normal value
+  }
+
   // Pass abandoned children to init.
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
     if(p->parent == curproc){
@@ -364,11 +370,11 @@ wait(void)
     sleep(curproc, &ptable.lock);  //DOC: wait-sleep
   }
 }
+
 /*
  * havekids variable not needed
  * pid variable removed from inside of waitpid() function
  */
-
 int
 waitpid(int pid, int *status, int options)
 {
@@ -394,7 +400,8 @@ waitpid(int pid, int *status, int options)
                 p->name[0] = 0;
                 p->killed = 0;
                 p->state = UNUSED;
-		
+
+                //if status not NULL, return exitStatus through status argument
                 if(status)               
                     *status = p->exitStatus;
 	        
@@ -403,13 +410,20 @@ waitpid(int pid, int *status, int options)
                 release(&ptable.lock);
                 return pid;
             }else{
-    
+                 
                 if(curproc->killed){
                   if(status)
                      *status = p->exitStatus;
                   release(&ptable.lock);
                   return -1;
                 }
+                
+                // If the current process is not the parent, set a special flag through exitStatus and save the current process in the waitpidCaller to be used by exit function.
+                if(p->parent != curproc){
+                    p->exitStatus = 100;
+                    p->waitpidCaller = curproc;
+                }
+
                 // Wait for children to exit.  (See wakeup1 call in proc_exit.)
                 sleep(curproc, &ptable.lock);  //DOC: wait-sleep
                 break;

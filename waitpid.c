@@ -1,78 +1,78 @@
-// Test that fork fails gracefully.
-// Tiny executable so that the limit can be filling the proc table.
+//This is an example program for waitpid.
 
 #include "types.h"
 #include "stat.h"
 #include "user.h"
 
 #define NULL 0
-#define N  1000
-/*
-void
-printf(int fd, const char *s, ...)
-{
-  write(fd, s, strlen(s));
-}
-*/
-void
-forktest(void)
-{
-  //int n, 
-  int pid, options, waitVal;
-  int status;
-
-  printf(1, "fork test\n");
-
-//  for(n=0; n<N; n++){
-    pid = fork();
-    if(pid < 0)
-      exit();
-    if(pid == 0){
-      exit();
-    }else {
-       options = 0;
-       status = 10;
-       waitVal = waitpid(22,&status, options); 
-       printf(1, "parent of 22, status : %d, waitval %d \n", status, waitVal);
-       waitVal = waitpid(pid,&status, options); 
-       printf(1, "parent of %d , status : %d, waitval %d \n", pid, status, waitVal);
-       pid = fork();
-
-       if(pid < 0)
-         exit();
-       if(pid == 0){
-         exit();
-       }else {
-          waitVal = waitpid(pid,NULL, options); 
-          printf(1, "parent of %d , status : NULL, waitval %d \n", pid, waitVal);
-       }
-    }
-  //}
-/*
-  if(n == N){
-    printf(1, "fork claimed to work N times!\n", N);
-    exit();
-  }
-
-  for(; n > 0; n--){
-    if(wait() < 0){
-      printf(1, "wait stopped early\n");
-      exit();
-    }
-  }
-
-  if(wait() != -1){
-    printf(1, "wait got too many\n");
-    exit();
-  }
-
-  printf(1, "fork test OK\n");
-  */
-}
 
 int
 main(void)
 {
-  forktest();
-  exit();
+    int parentPid, pid1, pid2,  pid3, pid4, options, waitVal;
+    int status;
+
+    printf(1, "Begin waitpid test\n");
+    parentPid = getpid();
+    printf(1, "Parent PID:%d\n", parentPid);
+   
+    pid1 = fork();
+    if(pid1 < 0)
+      exit();
+    if(pid1 == 0){
+       pid1 = getpid();
+       printf(1, "Child #1 pid: %d. Now exit.\n", pid1);
+       exit();
+    }
+    
+    options = 0;
+    status = 10;
+    waitVal = waitpid(12345,&status, options); 
+    printf(1, "Waitpid output: Nonexistent PID: 12345, exit status : %d, return value: %d \n", status, waitVal);
+    
+    waitVal = waitpid(pid1,&status, options); 
+    printf(1, "Waitpid output: PID: %d , exit status : %d, return value: %d \n", pid1, status, waitVal);
+
+    pid2 = fork();
+    if(pid2 < 0)
+      exit();
+    if(pid2 == 0){
+      pid2 = getpid();
+      printf(1, "Child #2 pid: %d. Now exit.\n", pid2);
+      exit();
+    }
+    
+    waitVal = waitpid(pid2,NULL, options); 
+    printf(1, "Waitpid output: PID: %d , exit status : NULL, return value: %d \n", pid2, waitVal);
+
+    pid3 = fork();
+    if(pid3 < 0)
+      exit();
+    if(pid3 == 0){
+       pid3 = getpid();
+       printf(1, "Child #3 pid: %d. Now exit.\n", pid3);
+       exit();
+    }
+
+    pid4 = fork();
+    if(pid4 < 0)
+      exit();
+    if(pid4 == 0){
+       pid4 = getpid();
+       
+       options = 0;
+       status = 10;
+       waitVal = waitpid(pid3,&status, options); 
+       printf(1, "Child #4 pid: %d finished waiting for Child #3 pid: %d , exit status : %d, waitpid return value: %d \n", pid4,pid3, status, waitVal);
+       printf(1, "Child #4 pid: %d. Now exit.\n", pid4);
+       exit();
+    }
+    
+    options = 0;
+    status = 10;
+    waitVal = waitpid(pid4,&status, options); 
+
+    printf(1, "Parent finished waiting for Child #4 pid: %d , exit status : %d, waitpid return value: %d \n", pid4, status, waitVal);
+
+    exit();
 }
