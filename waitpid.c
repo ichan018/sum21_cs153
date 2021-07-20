@@ -24,7 +24,7 @@ main(void)
        printf(1, "Child #1 pid: %d. Now exit.\n", pid1);
        exit();
     }
-    
+   
     options = 0;
     status = 10;
     waitVal = waitpid(12345,&status, options); 
