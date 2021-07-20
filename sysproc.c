@@ -20,6 +20,7 @@ sys_exit(void)
   return 0;  // not reached
 }
 
+//part a
 int
 sys_exit1(void)
 {
@@ -39,6 +40,8 @@ sys_wait(void)
   return wait();
 }
 
+
+//part b
 int
 sys_waitpid(void)
 {
@@ -58,6 +61,9 @@ sys_waitpid(void)
   return waitpid(pid,status,options); 
 }
 
+
+//part c
+//use argptr to retrieve pointer argument
 int
 sys_wait1(void)
 { 
@@ -66,7 +72,6 @@ sys_wait1(void)
     return -1;
   }
   return wait1(status); 
-  //return wait1((int *)status);
 }
 
 int

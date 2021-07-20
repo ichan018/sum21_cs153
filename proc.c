@@ -282,6 +282,7 @@ exit()
   panic("zombie exit");
 }
 
+//part a of lab
 void
 exit1(int status)
 {
@@ -371,7 +372,7 @@ wait(void)
   }
 }
 
-/*
+/* part c of lab 1
  * havekids variable not needed
  * pid variable removed from inside of waitpid() function
  */
@@ -440,6 +441,7 @@ waitpid(int pid, int *status, int options)
     }
 }
 
+// part b 
 // Wait for a child process to exit and return its pid.
 // Return -1 if this process has no children.
 int
@@ -468,10 +470,11 @@ wait1(int *status)
         p->name[0] = 0;
         p->killed = 0;
         p->state = UNUSED;
+        //return status through pointer is not null
         if(status){
            *status = p->exitStatus;
         }
-        p->exitStatus = 0; 
+        p->exitStatus = 0; //reset exitStatus to 0 
         release(&ptable.lock);
         return pid;
       }

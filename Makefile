@@ -181,9 +181,11 @@ UPROGS=\
 	_usertests\
 	_wc\
 	_zombie\
-	_exit1\
+	_wait1\
         _waitpid\
-        _test1\
+        _waitpid2\
+        _wait1null\
+        _wait1nochild\
 
 #/        _debug\
 
