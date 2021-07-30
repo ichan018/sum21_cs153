@@ -51,6 +51,7 @@ struct proc {
   char name[16];               // Process name (debugging)
   int exitStatus;              // exitStatus of the proc (LAB 1)
   struct proc *waitpidCaller;  // Caller process for waitpid (If waitpid caller is changed, exitStatus is 100.
+  int priority;            // Stores priority of process.
 };
 
 // Process memory is laid out contiguously, low addresses first:

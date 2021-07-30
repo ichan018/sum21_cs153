@@ -503,7 +503,10 @@ void
 scheduler(void)
 {
   struct proc *p;
+  struct proc *highest_priority_process;
   struct cpu *c = mycpu();
+  int curr_priority;
+  
   c->proc = 0;
   
   for(;;){
@@ -512,18 +515,27 @@ scheduler(void)
 
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
+    curr_priority = 17; // initial number must be larger than lowest priority;
+    
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       if(p->state != RUNNABLE)
         continue;
 
+      if (p->priority < curr_priority) {
+         curr_priority = p->priority;
+         highest_priority_process = p;
+      }
+    }
+
+    if (curr_priority < 17) {
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
       // before jumping back to us.
-      c->proc = p;
-      switchuvm(p);
-      p->state = RUNNING;
+      c->proc = highest_priority_process;
+      switchuvm(highest_priority_process);
+      highest_priority_process->state = RUNNING;
 
-      swtch(&(c->scheduler), p->context);
+      swtch(&(c->scheduler), highest_priority_process->context);
       switchkvm();
 
       // Process is done running for now.
@@ -531,7 +543,7 @@ scheduler(void)
       c->proc = 0;
     }
     release(&ptable.lock);
-
+     
   }
 }
 
@@ -618,7 +630,7 @@ sleep(void *chan, struct spinlock *lk)
   // Go to sleep.
   p->chan = chan;
   p->state = SLEEPING;
-
+  if (p->priority >= 2) p->priority = p->priority - 1;
   sched();
 
   // Tidy up.
@@ -640,8 +652,10 @@ wakeup1(void *chan)
   struct proc *p;
 
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
-    if(p->state == SLEEPING && p->chan == chan)
+    if(p->state == SLEEPING && p->chan == chan) {
       p->state = RUNNABLE;
+      if (p->priority < 16) p->priority = p->priority + 1;
+    }
 }
 
 // Wake up all processes sleeping on chan.
