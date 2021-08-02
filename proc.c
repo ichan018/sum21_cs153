@@ -89,6 +89,7 @@ allocproc(void)
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
+  p->priority = 8;
 
   release(&ptable.lock);
 
@@ -142,6 +143,8 @@ userinit(void)
 
   safestrcpy(p->name, "initcode", sizeof(p->name));
   p->cwd = namei("/");
+
+  p->priority = 8;     //initialize priority here
 
   // this assignment to p->state lets other cores
   // run this process. the acquire forces the above
@@ -503,7 +506,7 @@ void
 scheduler(void)
 {
   struct proc *p;
-  struct proc *highest_priority_process;
+  struct proc *highest_priority_process; 
   struct cpu *c = mycpu();
   int curr_priority;
   
@@ -515,18 +518,21 @@ scheduler(void)
 
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
-    curr_priority = 17; // initial number must be larger than lowest priority;
+    curr_priority = 17; // set to a value that is larger than lowest priority;
     
+    // for loop searches ptable for a runnable process with the highest priority
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       if(p->state != RUNNABLE)
         continue;
 
       if (p->priority < curr_priority) {
+         //higher priority process found
          curr_priority = p->priority;
          highest_priority_process = p;
       }
     }
 
+    // If there is at least 1 runnable process, curr_priority must be less than 17.
     if (curr_priority < 17) {
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
@@ -630,7 +636,11 @@ sleep(void *chan, struct spinlock *lk)
   // Go to sleep.
   p->chan = chan;
   p->state = SLEEPING;
-  if (p->priority >= 2) p->priority = p->priority - 1;
+
+  // increase priority of the process
+  if (p->priority >= 2)
+      p->priority = p->priority - 1;
+
   sched();
 
   // Tidy up.
@@ -654,7 +664,10 @@ wakeup1(void *chan)
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
     if(p->state == SLEEPING && p->chan == chan) {
       p->state = RUNNABLE;
-      if (p->priority < 16) p->priority = p->priority + 1;
+
+      //decrease priority
+      if (p->priority < 16)
+          p->priority = p->priority + 1;
     }
 }
 
