@@ -123,6 +123,7 @@ void            wakeup(void*);
 void            yield(void);
 void		exit1(int);              // part a
 int             wait1(int*);             // part b
+int             changeProcPriority(int);
 //void		debug(void);
 
 // swtch.S

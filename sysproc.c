@@ -137,6 +137,18 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+
+int
+sys_changeProcPriority(void)
+{
+  int newPriority;
+
+  if(argint(0, &newPriority) < 0)
+    return -1;
+  changeProcPriority(newPriority);
+  return 0;
+
+}
 /*
 int
 sys_debug(void)

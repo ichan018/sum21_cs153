@@ -540,6 +540,10 @@ scheduler(void)
       c->proc = highest_priority_process;
       switchuvm(highest_priority_process);
       highest_priority_process->state = RUNNING;
+      
+      //decrease priority
+      if (highest_priority_process->priority < 16)
+          highest_priority_process->priority = highest_priority_process->priority + 1;
 
       swtch(&(c->scheduler), highest_priority_process->context);
       switchkvm();
@@ -662,13 +666,8 @@ wakeup1(void *chan)
   struct proc *p;
 
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
-    if(p->state == SLEEPING && p->chan == chan) {
+    if(p->state == SLEEPING && p->chan == chan)
       p->state = RUNNABLE;
-
-      //decrease priority
-      if (p->priority < 16)
-          p->priority = p->priority + 1;
-    }
 }
 
 // Wake up all processes sleeping on chan.
@@ -730,7 +729,9 @@ procdump(void)
       state = states[p->state];
     else
       state = "???";
-    cprintf("%d %s %s", p->pid, state, p->name);
+    //cprintf("%d %s %s", p->pid, state, p->name);
+    
+    cprintf("%d %s %s %d", p->pid, state, p->name, p->priority);
     if(p->state == SLEEPING){
       getcallerpcs((uint*)p->context->ebp+2, pc);
       for(i=0; i<10 && pc[i] != 0; i++)
@@ -739,6 +740,15 @@ procdump(void)
     cprintf("\n");
   }
 }
+
+int
+changeProcPriority(int newPriority) {
+     struct proc *curproc = myproc();
+     
+     curproc->priority = newPriority;
+     return 0;
+}
+
 /*
 void
 debug(void){

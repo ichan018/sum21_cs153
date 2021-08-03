@@ -106,6 +106,7 @@ extern int sys_write(void);
 extern int sys_uptime(void);
 extern int sys_exit1(void);    //part a
 extern int sys_wait1(void);    //part b
+extern int sys_changeProcPriority(void); // I.C.
 //extern int sys_debug(void);
 
 static int (*syscalls[])(void) = {
@@ -133,6 +134,7 @@ static int (*syscalls[])(void) = {
 [SYS_close]   sys_close,
 [SYS_exit1]   sys_exit1,  //part a
 [SYS_wait1]   sys_wait1,  //part b
+[SYS_changeProcPriority] sys_changeProcPriority, // I.C.
 //[SYS_debug]   sys_debug,
 
 };
