@@ -507,11 +507,14 @@ scheduler(void)
 {
   struct proc *p;
   struct proc *highest_priority_process; 
+  struct proc *last_chosen_process;
   struct cpu *c = mycpu();
   int curr_priority;
   
   c->proc = 0;
-  
+  last_chosen_process = ptable.proc;
+  last_chosen_process--;  
+
   for(;;){
     // Enable interrupts on this processor.
     sti();
@@ -521,7 +524,18 @@ scheduler(void)
     curr_priority = 17; // set to a value that is larger than lowest priority;
     
     // for loop searches ptable for a runnable process with the highest priority
-    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    for(p = ++last_chosen_process; p < &ptable.proc[NPROC]; p++){
+      if(p->state != RUNNABLE)
+        continue;
+
+      if (p->priority < curr_priority) {
+         //higher priority process found
+         curr_priority = p->priority;
+         highest_priority_process = p;
+      }
+    }
+
+    for(p = ptable.proc; p < last_chosen_process; p++){
       if(p->state != RUNNABLE)
         continue;
 
@@ -551,9 +565,14 @@ scheduler(void)
       // Process is done running for now.
       // It should have changed its p->state before coming back.
       c->proc = 0;
+      last_chosen_process = highest_priority_process;
+    } else {
+      // if there is no runnable process, reset the last chosen process to point to the first process in the process table.
+      last_chosen_process = ptable.proc;
+      last_chosen_process--;  
     }
+    
     release(&ptable.lock);
-     
   }
 }
 
@@ -741,6 +760,7 @@ procdump(void)
   }
 }
 
+//syscall not yet finished
 int
 changeProcPriority(int newPriority) {
      struct proc *curproc = myproc();

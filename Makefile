@@ -186,8 +186,8 @@ UPROGS=\
         _waitpid2\
         _wait1null\
         _wait1nochild\
-#        _change_pri\
-#        _starve\
+        _change_pri\
+        _starve\
 
 #/        _debug\
 
