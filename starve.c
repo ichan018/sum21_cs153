@@ -10,8 +10,6 @@ int
 main(void)
 {
     int parentPid, pid1;
-    //, pid2,  pid3, pid4, options, waitVal;
-    //int status;
 
     printf(1, "Begin waitpid test\n");
     parentPid = getpid();
@@ -25,15 +23,12 @@ main(void)
        pid1 = getpid();
        printf(1, "Child #1 pid: %d. Now exit.\n", pid1);
 
-      // changeProcPriority(1);
        for (;;) {
-        //  changeProcPriority(1);
           printf(1, "Inside child process: %d\n", pid1);
        }  
     }else{
        changeProcPriority(16);
        for(;;){
-          //changeProcPriority(16);
           printf(1, "Inside parent process\n");
         }
     }

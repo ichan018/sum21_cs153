@@ -10,7 +10,6 @@ int
 main(void)
 {
     int parentPid, pid1;
-    //int status;
 
     printf(1, "Begin waitpid test\n");
     parentPid = getpid();
