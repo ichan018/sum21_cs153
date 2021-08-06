@@ -188,6 +188,7 @@ UPROGS=\
         _wait1nochild\
         _change_pri\
         _starve\
+        _pstest\
 
 #/        _debug\
 
