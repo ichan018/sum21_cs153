@@ -506,7 +506,7 @@ void
 scheduler(void)
 {
   struct proc *p;
-  struct proc *highest_priority_process; 
+  struct proc *highest_priority_process = 0; 
   struct proc *last_chosen_process;
   struct cpu *c = mycpu();
   int curr_priority;
@@ -523,15 +523,26 @@ scheduler(void)
     acquire(&ptable.lock);
     curr_priority = 17; // set to a value that is larger than lowest priority;
     
+    last_chosen_process+=1;
     // for loop searches ptable for a runnable process with the highest priority
-    for(p = ++last_chosen_process; p < &ptable.proc[NPROC]; p++){
+    for(p = last_chosen_process; p < &ptable.proc[NPROC]; p++){
       if(p->state != RUNNABLE)
         continue;
 
-      if (p->priority < curr_priority) {
+      else if (p->priority < curr_priority) {
          //higher priority process found
          curr_priority = p->priority;
+         if(highest_priority_process){
+           if(highest_priority_process->priority > 0){  
+             highest_priority_process->priority = highest_priority_process->priority - 1; //implement aging for process that is runnable but not high priority
+           }
+         } 
          highest_priority_process = p;
+      }
+      else{ 
+         if(p->priority > 0){  
+           p->priority = p->priority -1; //implement aging for process that is runnable but not high priority
+         }  
       }
     }
 
@@ -539,10 +550,20 @@ scheduler(void)
       if(p->state != RUNNABLE)
         continue;
 
-      if (p->priority < curr_priority) {
+      else if (p->priority < curr_priority) {
          //higher priority process found
          curr_priority = p->priority;
+         if(highest_priority_process){
+           if(highest_priority_process->priority > 0){  
+             highest_priority_process->priority = highest_priority_process->priority - 1; //implement aging for process that is runnable but not high priority
+           }
+         } 
          highest_priority_process = p;
+      }
+      else{
+         if(p->priority > 0){
+           p->priority = p->priority -1; //implement aging for process that is runnable but not high priority
+         }
       }
     }
 
@@ -554,11 +575,11 @@ scheduler(void)
       c->proc = highest_priority_process;
       switchuvm(highest_priority_process);
       highest_priority_process->state = RUNNING;
-      
+       
       //decrease priority
       if (highest_priority_process->priority < 16)
           highest_priority_process->priority = highest_priority_process->priority + 1;
-
+ 
       swtch(&(c->scheduler), highest_priority_process->context);
       switchkvm();
 
@@ -575,6 +596,9 @@ scheduler(void)
     release(&ptable.lock);
   }
 }
+
+
+
 
 // Enter scheduler.  Must hold only ptable.lock
 // and have changed proc->state. Saves and restores
@@ -766,7 +790,8 @@ changeProcPriority(int newPriority) {
      struct proc *curproc = myproc();
      
      curproc->priority = newPriority;
-     return 0;
+     //printf(1, "changed to: %d", curproc->priority);
+     return 0; 
 }
 
 /*
