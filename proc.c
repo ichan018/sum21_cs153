@@ -39,10 +39,10 @@ struct cpu*
 mycpu(void)
 {
   int apicid, i;
-
+  
   if(readeflags()&FL_IF)
     panic("mycpu called with interrupts enabled\n");
-
+  
   apicid = lapicid();
   // APIC IDs are not guaranteed to be contiguous. Maybe we should have
   // a reverse map, or reserve a register to store &cpus[i].
@@ -126,7 +126,7 @@ userinit(void)
   extern char _binary_initcode_start[], _binary_initcode_size[];
 
   p = allocproc();
-
+  
   initproc = p;
   if((p->pgdir = setupkvm()) == 0)
     panic("userinit: out of memory?");
@@ -237,12 +237,12 @@ exit()
   struct proc *p;
   int fd;
 
-
+ 
 //  if(curproc == initproc)
   if(curproc == initproc){
      curproc->exitStatus = 1;
      panic("init exiting");
-
+    
   }
   // Close all open files.
   for(fd = 0; fd < NOFILE; fd++){
@@ -338,7 +338,7 @@ wait(void)
   struct proc *p;
   int havekids, pid;
   struct proc *curproc = myproc();
-
+  
   acquire(&ptable.lock);
   for(;;){
     // Scan through table looking for exited children.
@@ -394,7 +394,7 @@ waitpid(int pid, int *status, int options)
             foundPid = 1;
             if (p->state == ZOMBIE){
             // Found one.
-
+            
                 kfree(p->kstack);
                 p->kstack = 0;
                 freevm(p->pgdir);
@@ -407,20 +407,20 @@ waitpid(int pid, int *status, int options)
                 //if status not NULL, return exitStatus through status argument
                 if(status)               
                     *status = p->exitStatus;
-
+	        
 		p->exitStatus = 0;	               
-
+                
                 release(&ptable.lock);
                 return pid;
             }else{
-
+                 
                 if(curproc->killed){
                   if(status)
                      *status = p->exitStatus;
                   release(&ptable.lock);
                   return -1;
                 }
-
+                
                 // If the current process is not the parent, set a special flag through exitStatus and save the current process in the waitpidCaller to be used by exit function.
                 if(p->parent != curproc){
                     p->exitStatus = 100; //constant 100 may be changed to another constant
@@ -433,7 +433,7 @@ waitpid(int pid, int *status, int options)
             }
         } //end of if statment that checks for PID
       } //end of for loop that searches through ptable
-
+      
       if (!foundPid){ //pid not found
           if(status)
 		*status = -1;
@@ -452,7 +452,7 @@ wait1(int *status)
   struct proc *p;
   int havekids, pid;
   struct proc *curproc = myproc();
-
+  
   acquire(&ptable.lock);
   for(;;){
     // Scan through table looking for exited children.
@@ -506,11 +506,11 @@ void
 scheduler(void)
 {
   struct proc *p;
-  struct proc *highest_priority_process; 
+  struct proc *highest_priority_process = 0; 
   struct proc *last_chosen_process;
   struct cpu *c = mycpu();
   int curr_priority;
-
+  
   c->proc = 0;
   last_chosen_process = ptable.proc;
   last_chosen_process--;  
@@ -522,27 +522,48 @@ scheduler(void)
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
     curr_priority = 17; // set to a value that is larger than lowest priority;
-
+    
+    last_chosen_process+=1;
     // for loop searches ptable for a runnable process with the highest priority
-    for(p = ++last_chosen_process; p < &ptable.proc[NPROC]; p++){
+    for(p = last_chosen_process; p < &ptable.proc[NPROC]; p++){
       if(p->state != RUNNABLE)
         continue;
 
-      if (p->priority < curr_priority) {
+      else if (p->priority < curr_priority) {
          //higher priority process found
          curr_priority = p->priority;
+         if(highest_priority_process){
+           if(highest_priority_process->priority > 1){  
+             highest_priority_process->priority = highest_priority_process->priority - 1; //implement aging for process that is runnable but not high priority
+           }
+         } 
          highest_priority_process = p;
+      }
+      else{ 
+         if(p->priority > 1){  
+           p->priority = p->priority -1; //implement aging for process that is runnable but not high priority
+         }  
       }
     }
 
-    for(p = ptable.proc; p < last_chosen_process; p++){
+    for(p = ptable.proc; p <= last_chosen_process; p++){
       if(p->state != RUNNABLE)
         continue;
 
-      if (p->priority < curr_priority) {
+      else if (p->priority < curr_priority) {
          //higher priority process found
          curr_priority = p->priority;
+         if(highest_priority_process){
+           if(highest_priority_process->priority > 1){  
+             highest_priority_process->priority = highest_priority_process->priority - 1; //implement aging for process that is runnable but not high priority
+           }
+         } 
          highest_priority_process = p;
+      }
+      else{
+         if(p->priority > 1){
+           p->priority = p->priority -1; //implement aging for process that is runnable but not high priority
+         }
       }
     }
 
@@ -554,11 +575,11 @@ scheduler(void)
       c->proc = highest_priority_process;
       switchuvm(highest_priority_process);
       highest_priority_process->state = RUNNING;
-
+       
       //decrease priority
       if (highest_priority_process->priority < 16)
           highest_priority_process->priority = highest_priority_process->priority + 1;
-
+ 
       swtch(&(c->scheduler), highest_priority_process->context);
       switchkvm();
 
@@ -571,10 +592,13 @@ scheduler(void)
       last_chosen_process = ptable.proc;
       last_chosen_process--;  
     }
-
+    
     release(&ptable.lock);
   }
 }
+
+
+
 
 // Enter scheduler.  Must hold only ptable.lock
 // and have changed proc->state. Saves and restores
@@ -639,7 +663,7 @@ void
 sleep(void *chan, struct spinlock *lk)
 {
   struct proc *p = myproc();
-
+  
   if(p == 0)
     panic("sleep");
 
@@ -749,7 +773,7 @@ procdump(void)
     else
       state = "???";
     //cprintf("%d %s %s", p->pid, state, p->name);
-
+    
     cprintf("%d %s %s %d", p->pid, state, p->name, p->priority);
     if(p->state == SLEEPING){
       getcallerpcs((uint*)p->context->ebp+2, pc);
@@ -764,9 +788,10 @@ procdump(void)
 int
 changeProcPriority(int newPriority) {
      struct proc *curproc = myproc();
-
+     
      curproc->priority = newPriority;
-     return 0;
+     //printf(1, "changed to: %d", curproc->priority);
+     return 0; 
 }
 
 /*
