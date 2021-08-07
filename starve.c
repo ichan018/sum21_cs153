@@ -14,8 +14,14 @@ main(void)
     printf(1, "Begin waitpid test\n");
     parentPid = getpid();
     printf(1, "Parent PID:%d\n", parentPid);
+    changeProcPriority(16);
+    sleep(5);
+    printf(1, "Finish first sleep\n");
+    //sleep(150);
+    //printf(1, "Finish second sleep\n");
+    exit(); 
 
-    pid1 = fork();
+   pid1 = fork();
     if(pid1 < 0)
        exit();
     

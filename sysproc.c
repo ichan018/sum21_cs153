@@ -149,11 +149,11 @@ sys_changeProcPriority(void)
   return 0;
 
 }
-/*
+
 int
 sys_debug(void)
 {
-    debug();
+    //debug();
+    procdump();
     return 0;
 }
-*/

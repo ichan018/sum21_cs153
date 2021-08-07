@@ -124,7 +124,7 @@ void            yield(void);
 void		exit1(int);              // part a
 int             wait1(int*);             // part b
 int             changeProcPriority(int);
-//void		debug(void);
+int		debug(void);
 
 // swtch.S
 void            swtch(struct context**, struct context*);
