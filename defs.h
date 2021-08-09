@@ -123,8 +123,8 @@ void            wakeup(void*);
 void            yield(void);
 void		exit1(int);              // part a
 int             wait1(int*);             // part b
-int             changeProcPriority(int);
-int		debug(void);
+int             changeProcPriority(int);  // lab2
+int		debug(void); //lab2
 
 // swtch.S
 void            swtch(struct context**, struct context*);
