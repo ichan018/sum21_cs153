@@ -23,5 +23,5 @@
 #define SYS_exit1  22
 #define SYS_waitpid 23
 #define SYS_wait1  24
-#define SYS_changeProcPriority 25
-#define SYS_debug  26
+#define SYS_changeProcPriority 25 //LAB 2
+#define SYS_debug  26 //LAB 2

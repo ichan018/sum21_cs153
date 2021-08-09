@@ -89,7 +89,7 @@ allocproc(void)
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
-  p->priority = 8; 
+  p->priority = 8; //defualt priority LAB 2
 
   release(&ptable.lock);
 
@@ -495,25 +495,24 @@ wait1(int *status)
 
 
 //PAGEBREAK: 42
-// Per-CPU process scheduler.
+// Per-CPU process scheduler. // NOW priority scheduler for LAB 2
 // Each CPU calls scheduler() after setting itself up.
 // Scheduler never returns.  It loops, doing:
 //  - choose a process to run
 //  - swtch to start running that process
 //  - eventually that process transfers control
-//      via swtch back to the scheduler.
-
+//      via swtch back to the scheduler. 
 void
 scheduler(void)
 {
   struct proc *p;
-  struct proc *highest_priority_process = 0;
-  struct proc *last_chosen_process;
+  struct proc *highest_priority_process = 0; // keep track of highest priority process
+  struct proc *last_chosen_process; //last chosen process pointer
   struct cpu *c = mycpu();
-  int curr_priority;
+  int curr_priority; // variable for looping through priorities
 
   c->proc = 0; 
-  last_chosen_process = ptable.proc;
+  last_chosen_process = ptable.proc; //set to right before first process
   last_chosen_process--;
 
   for(;;){
@@ -522,9 +521,9 @@ scheduler(void)
 
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
-    curr_priority = 17; // set to a value that is larger than lowest priority;
+    curr_priority = 17; // set to a value that is larger than worst priority;
 
-    last_chosen_process+=1;
+    last_chosen_process+=1; // now first value in the process table
     // for loop searches ptable for a runnable process with the highest priority
     for(p = last_chosen_process; p < &ptable.proc[NPROC]; p++){
       if(p->state != RUNNABLE)
@@ -532,20 +531,22 @@ scheduler(void)
  
       else if (p->priority < curr_priority) {
          //higher priority process found
-         curr_priority = p->priority;
-         if(highest_priority_process){
+         curr_priority = p->priority; // save priority
+         if(highest_priority_process){ // (aging edge case) if a process was already found but wiht worse priority, improve priority by 1 (aging)
            if(highest_priority_process->priority > 0){
              highest_priority_process->priority = highest_priority_process->priority - 1; //implement aging for process that is runnable but not high priority
            } 
          }  
          highest_priority_process = p;
       }
+      //aging for process with worse priority
       else{
          if(p->priority > 0){
            p->priority = p->priority -1; //implement aging for process that is runnable but not high priority
          }
       }
     }
+    // for loop searches ptable for a runnable process with the highest priority
     for(p = ptable.proc; p <= last_chosen_process; p++){
       if(p->state != RUNNABLE)
         continue;
@@ -554,12 +555,13 @@ scheduler(void)
          //higher priority process found
          curr_priority = p->priority;
          if(highest_priority_process){
-           if(highest_priority_process->priority > 0){
+           if(highest_priority_process->priority > 0){ // (aging edge case) if a process was already found but wiht worse priority, improve priority by 1 (aging)
              highest_priority_process->priority = highest_priority_process->priority - 1; //implement aging for process that is runnable but not high priority
            }
          }
-         highest_priority_process = p;
+         highest_priority_process = p; // new highest priority process
       }
+      //aging for process with worse priority
       else{
          if(p->priority > 0){
            p->priority = p->priority -1; //implement aging for process that is runnable but not high priority
@@ -576,7 +578,7 @@ scheduler(void)
       switchuvm(highest_priority_process);
       highest_priority_process->state = RUNNING;
 
-      //decrease priority
+      //decrease priority of running process (aging)
       if (highest_priority_process->priority < 16)
           highest_priority_process->priority = highest_priority_process->priority + 1; //implement aging for process currently running
 
@@ -783,12 +785,12 @@ procdump(void)
   }
 }
 
-//syscall not yet finished
+//syscall to change the priority of a currently running process LAB 2
 int
 changeProcPriority(int newPriority) {
-     struct proc *curproc = myproc();
+     struct proc *curproc = myproc(); // get current process
      
-     curproc->priority = newPriority;
+     curproc->priority = newPriority; // update its priority
      //printf(1, "changed to: %d", curproc->priority);
      return 0; 
 }

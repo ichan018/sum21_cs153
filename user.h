@@ -26,7 +26,7 @@ int getpid(void);
 char* sbrk(int);
 int sleep(int);
 int uptime(void);
-int changeProcPriority(int);
+int changeProcPriority(int); //LAB 2
 int debug(void);
 
 // ulib.c

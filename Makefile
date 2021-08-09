@@ -182,14 +182,12 @@ UPROGS=\
 	_wc\
 	_zombie\
 	_wait1\
-        _waitpid\
-        _waitpid2\
-        _wait1null\
-        _wait1nochild\
-        _change_pri\
-        _starve\
-        _pstest\
-        _debug\
+	_waitpid\
+	_waitpid2\
+	_wait1null\
+	_wait1nochild\
+	_pstest\
+	_debug\
 
 fs.img: mkfs README $(UPROGS)
 	./mkfs fs.img README $(UPROGS)
