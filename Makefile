@@ -187,7 +187,6 @@ UPROGS=\
 	_wait1null\
 	_wait1nochild\
 	_pstest\
-	_debug\
 
 fs.img: mkfs README $(UPROGS)
 	./mkfs fs.img README $(UPROGS)
