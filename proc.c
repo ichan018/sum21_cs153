@@ -26,12 +26,12 @@ pinit(void)
 {
   initlock(&ptable.lock, "ptable");
 }
-
+ 
 // Must be called with interrupts disabled
 int
 cpuid() {
   return mycpu()-cpus;
-}
+}   
 
 // Must be called with interrupts disabled to avoid the caller being
 // rescheduled between reading lapicid and running through the loop.
@@ -82,14 +82,14 @@ allocproc(void)
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
     if(p->state == UNUSED)
       goto found;
-
+ 
   release(&ptable.lock);
   return 0;
 
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
-  p->priority = 8;
+  p->priority = 8; 
 
   release(&ptable.lock);
 
@@ -183,7 +183,7 @@ growproc(int n)
 // Caller must set state of returned proc to RUNNABLE.
 int
 fork(void)
-{
+{ 
   int i, pid;
   struct proc *np;
   struct proc *curproc = myproc();
@@ -452,7 +452,7 @@ wait1(int *status)
   struct proc *p;
   int havekids, pid;
   struct proc *curproc = myproc();
-  
+   
   acquire(&ptable.lock);
   for(;;){
     // Scan through table looking for exited children.
@@ -502,18 +502,19 @@ wait1(int *status)
 //  - swtch to start running that process
 //  - eventually that process transfers control
 //      via swtch back to the scheduler.
+
 void
 scheduler(void)
 {
   struct proc *p;
-  struct proc *highest_priority_process = 0; 
-  //struct proc *last_chosen_process;
+  struct proc *highest_priority_process = 0;
+  struct proc *last_chosen_process;
   struct cpu *c = mycpu();
   int curr_priority;
-  
-  c->proc = 0;
-  //last_chosen_process = ptable.proc;
-  //last_chosen_process--;  
+
+  c->proc = 0; 
+  last_chosen_process = ptable.proc;
+  last_chosen_process--;
 
   for(;;){
     // Enable interrupts on this processor.
@@ -522,42 +523,21 @@ scheduler(void)
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
     curr_priority = 17; // set to a value that is larger than lowest priority;
-    
-    //last_chosen_process+=1;
+
+    last_chosen_process+=1;
     // for loop searches ptable for a runnable process with the highest priority
-    for(p = ptable.proc/*last_chosen_process*/; p < &ptable.proc[NPROC]; p++){
+    for(p = last_chosen_process; p < &ptable.proc[NPROC]; p++){
       if(p->state != RUNNABLE)
         continue;
-
-      else if (p->priority < curr_priority) {
-         //higher priority process found
-         curr_priority = p->priority;
-         /*if(highest_priority_process){
-           if(highest_priority_process->priority > 0){  
-             highest_priority_process->priority = highest_priority_process->priority - 1; //implement aging for process that is runnable but not high priority
-           }
-         }*/ 
-         highest_priority_process = p;
-      }
-      /*else{ 
-         if(p->priority > 0){  
-           p->priority = p->priority -1; //implement aging for process that is runnable but not high priority
-         }  
-      }*/
-    }
-
-    /*for(p = ptable.proc; p <= last_chosen_process; p++){
-      if(p->state != RUNNABLE)
-        continue;
-
+ 
       else if (p->priority < curr_priority) {
          //higher priority process found
          curr_priority = p->priority;
          if(highest_priority_process){
-           if(highest_priority_process->priority > 0){  
+           if(highest_priority_process->priority > 0){
              highest_priority_process->priority = highest_priority_process->priority - 1; //implement aging for process that is runnable but not high priority
-           }
-         } 
+           } 
+         }  
          highest_priority_process = p;
       }
       else{
@@ -565,48 +545,57 @@ scheduler(void)
            p->priority = p->priority -1; //implement aging for process that is runnable but not high priority
          }
       }
-    }*/
+    }
+    for(p = ptable.proc; p <= last_chosen_process; p++){
+      if(p->state != RUNNABLE)
+        continue;
+
+      else if (p->priority < curr_priority) {
+         //higher priority process found
+         curr_priority = p->priority;
+         if(highest_priority_process){
+           if(highest_priority_process->priority > 0){
+             highest_priority_process->priority = highest_priority_process->priority - 1; //implement aging for process that is runnable but not high priority
+           }
+         }
+         highest_priority_process = p;
+      }
+      else{
+         if(p->priority > 0){
+           p->priority = p->priority -1; //implement aging for process that is runnable but not high priority
+         }
+      }
+    }
 
     // If there is at least 1 runnable process, curr_priority must be less than 17.
-    if (highest_priority_process) {
+    if (curr_priority < 17) {
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
       // before jumping back to us.
       c->proc = highest_priority_process;
       switchuvm(highest_priority_process);
       highest_priority_process->state = RUNNING;
-       
+
       //decrease priority
       if (highest_priority_process->priority < 16)
-          highest_priority_process->priority = highest_priority_process->priority + 1;
- 
+          highest_priority_process->priority = highest_priority_process->priority + 1; //implement aging for process currently running
+
       swtch(&(c->scheduler), highest_priority_process->context);
       switchkvm();
 
       // Process is done running for now.
       // It should have changed its p->state before coming back.
       c->proc = 0;
-      //last_chosen_process = highest_priority_process;
-    } /*else {
+      last_chosen_process = highest_priority_process;
+    } else {
       // if there is no runnable process, reset the last chosen process to point to the first process in the process table.
       last_chosen_process = ptable.proc;
-      last_chosen_process--;  
-    }*/
-    
-    
-    /*for(p = ptable.proc; p <= last_chosen_process; p++){
-      if(p->state != RUNNABLE)
-        continue;
-
-      else if (p != highest_priority_process && p->priority > 1) {
-        p->priority = p->priority - 1;
-      }
-    }*/
+      last_chosen_process--;
+    }
 
     release(&ptable.lock);
   }
-}
-
+} 
 
 
 
@@ -617,10 +606,10 @@ scheduler(void)
 // be proc->intena and proc->ncli, but that would
 // break in the few places where a lock is held but
 // there's no process.
-void
+void   
 sched(void)
 {
-  int intena;
+  int intena; 
   struct proc *p = myproc();
 
   if(!holding(&ptable.lock))
@@ -631,11 +620,11 @@ sched(void)
     panic("sched running");
   if(readeflags()&FL_IF)
     panic("sched interruptible");
-  intena = mycpu()->intena;
+  intena = mycpu()->intena; 
   swtch(&p->context, mycpu()->scheduler);
   mycpu()->intena = intena;
 }
-
+ 
 // Give up the CPU for one scheduling round.
 void
 yield(void)
