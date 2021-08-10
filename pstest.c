@@ -3,6 +3,7 @@
 #include "types.h"
 #include "stat.h"
 #include "user.h"
+<<<<<<< Updated upstream
  
    
 #define NULL 0 
@@ -11,7 +12,7 @@ int
 main(void)
 {
     int parentPid, pid1, pid2; // three processes, two children one parent
-
+    
     printf(1, "Begin priority scheduling test\n");
     parentPid = getpid();
     printf(1, "Parent PID:%d\n", parentPid); //print parent pid
