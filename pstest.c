@@ -3,7 +3,6 @@
 #include "types.h"
 #include "stat.h"
 #include "user.h"
-<<<<<<< Updated upstream
  
    
 #define NULL 0 
