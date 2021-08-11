@@ -686,7 +686,7 @@ sleep(void *chan, struct spinlock *lk)
   p->state = SLEEPING;
 
   // increase priority of the process
-  if (p->priority > 0)
+  if (p->priority >= 2)
       p->priority = p->priority - 1;
 
   sched();
