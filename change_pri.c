@@ -13,7 +13,9 @@
 int
 main(int argc, char *argv[])
 {
-    int parentPid, pid1, i,j;
+    int parentPid, pid1;
+    int i; // counter for for loop
+    int j; // counter for debug system call
 
     printf(1, "Begin change_pri test\n");
     parentPid = getpid();
@@ -34,12 +36,13 @@ main(int argc, char *argv[])
        debug();
  
        sleep(1);
-
+      
+       // for every other iteration, debug is called once
        for (i = 0, j = 0;j < atoi(argv[3]);i++) {
             if (i % 2 == 1) {
                printf(1, "\nWhen Child (PID %d) is running at iteration %d in the for loop, below is the procdump output\n\n", pid1, i);
                debug(); 
-               j++;
+               j++; // debug is called, so j incremented
             }
        }  
     }else{
