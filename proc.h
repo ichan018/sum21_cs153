@@ -52,6 +52,7 @@ struct proc {
   int exitStatus;              // exitStatus of the proc (LAB 1)
   struct proc *waitpidCaller;  // Caller process for waitpid (If waitpid caller is changed, exitStatus is 100.
   int priority;                // Stores priority of process. LAB 2
+  int stackPageCounter;        // Keeps track of number of pages in stack
 };
 
 // Process memory is laid out contiguously, low addresses first:

@@ -90,6 +90,7 @@ found:
   p->state = EMBRYO;
   p->pid = nextpid++;
   p->priority = 8; //defualt priority LAB 2
+  p->stackPageCounter = 0;
 
   release(&ptable.lock);
 

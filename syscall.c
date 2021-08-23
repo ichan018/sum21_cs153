@@ -17,10 +17,15 @@
 int
 fetchint(uint addr, int *ip)
 {
-  //struct proc *curproc = myproc();
+  struct proc *curproc = myproc();
+  int stackPageCounter = curproc->stackPageCounter;
+  uint sz = curproc->sz;
+
+stackPageCounter = 1;
 
   //if(addr >= curproc->sz || addr+4 > curproc->sz)
-  if(addr < KERNBASE - PGSIZE || addr+4 >= KERNBASE)
+  //if(addr < KERNBASE - PGSIZE || addr+4 >= KERNBASE)
+  if((addr >= sz && addr < KERNBASE - stackPageCounter * PGSIZE) || addr >= KERNBASE || ((addr+4 > sz && addr-4 < KERNBASE - stackPageCounter *PGSIZE) || addr+4 >= KERNBASE))
     return -1;
   *ip = *(int*)(addr);
   return 0;
@@ -33,14 +38,19 @@ int
 fetchstr(uint addr, char **pp)
 {
   char *s, *ep;
-//  struct proc *curproc = myproc();
+  struct proc *curproc = myproc();
+  int stackPageCounter = curproc->stackPageCounter;
+  uint sz = curproc->sz;
 
+ stackPageCounter = 1;
+  
   //if(addr >= curproc->sz)
-  if(addr < KERNBASE - PGSIZE || addr >= KERNBASE)
+  //if(addr < KERNBASE - PGSIZE || addr >= KERNBASE)
+  if((addr >= sz && addr < KERNBASE - stackPageCounter * PGSIZE) || addr >= KERNBASE)
     return -1;
-  *pp = (char*)addr;
-  //ep = (char*)curproc->sz;
-  ep = (char*) KERNBASE;
+  *pp = (char*) addr;
+  ep = (char*) sz;
+  //ep = (char*) KERNBASE;
   for(s = *pp; s < ep; s++){
     if(*s == 0)
       return s - *pp;
@@ -63,13 +73,17 @@ argptr(int n, char **pp, int size)
 {
   int i;
   struct proc *curproc = myproc();
+  int stackPageCounter = curproc->stackPageCounter;
+  uint sz = curproc->sz;
+  
+stackPageCounter = 1;
  
   if(argint(n, &i) < 0)
-    return -1;
+     return -1;
   //if(size < 0 || (uint)i >= curproc->sz || (uint)i+size > curproc->sz)
-  if(addr < KERNBASE - PGSIZE || addr+4 >= KERNBASE)
-  if(size < 0 || (uint)i < KERNBASE - PGSIZE || (uint)i+size >= KERNBASE)
-    return -1;
+  //  if(size < 0 || (uint)i < KERNBASE - PGSIZE || (uint)i+size >= KERNBASE)
+  if((size < 0) || ((uint)i >= sz && (uint)i < KERNBASE - stackPageCounter * PGSIZE) || (uint)i  >= KERNBASE || (( (uint)i + size > sz && (uint)i - size < KERNBASE - stackPageCounter *PGSIZE) || (uint)i + size >= KERNBASE))
+     return -1;
   *pp = (char*)i;
   return 0;
 }
