@@ -21,10 +21,7 @@ fetchint(uint addr, int *ip)
   int stackPageCounter = curproc->stackPageCounter;
   uint sz = curproc->sz;
 
-stackPageCounter = 1;
-
   //if(addr >= curproc->sz || addr+4 > curproc->sz)
-  //if(addr < KERNBASE - PGSIZE || addr+4 >= KERNBASE)
   if((addr >= sz && addr < KERNBASE - stackPageCounter * PGSIZE) || addr >= KERNBASE || ((addr+4 > sz && addr-4 < KERNBASE - stackPageCounter *PGSIZE) || addr+4 >= KERNBASE))
     return -1;
   *ip = *(int*)(addr);
@@ -41,16 +38,15 @@ fetchstr(uint addr, char **pp)
   struct proc *curproc = myproc();
   int stackPageCounter = curproc->stackPageCounter;
   uint sz = curproc->sz;
-
- stackPageCounter = 1;
   
   //if(addr >= curproc->sz)
-  //if(addr < KERNBASE - PGSIZE || addr >= KERNBASE)
   if((addr >= sz && addr < KERNBASE - stackPageCounter * PGSIZE) || addr >= KERNBASE)
-    return -1;
+      return -1;
+
   *pp = (char*) addr;
-  ep = (char*) sz;
-  //ep = (char*) KERNBASE;
+  //ep = (char*) sz;
+  ep = (char*)(KERNBASE);
+  
   for(s = *pp; s < ep; s++){
     if(*s == 0)
       return s - *pp;
@@ -76,12 +72,9 @@ argptr(int n, char **pp, int size)
   int stackPageCounter = curproc->stackPageCounter;
   uint sz = curproc->sz;
   
-stackPageCounter = 1;
- 
   if(argint(n, &i) < 0)
      return -1;
   //if(size < 0 || (uint)i >= curproc->sz || (uint)i+size > curproc->sz)
-  //  if(size < 0 || (uint)i < KERNBASE - PGSIZE || (uint)i+size >= KERNBASE)
   if((size < 0) || ((uint)i >= sz && (uint)i < KERNBASE - stackPageCounter * PGSIZE) || (uint)i  >= KERNBASE || (( (uint)i + size > sz && (uint)i - size < KERNBASE - stackPageCounter *PGSIZE) || (uint)i + size >= KERNBASE))
      return -1;
   *pp = (char*)i;
@@ -127,6 +120,8 @@ extern int sys_exit1(void);    //part a
 extern int sys_wait1(void);    //part b
 extern int sys_changeProcPriority(void); // I.C. LAB 2
 extern int sys_debug(void);
+extern int sys_page_fault(void);
+
 
 static int (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
@@ -155,7 +150,7 @@ static int (*syscalls[])(void) = {
 [SYS_wait1]   sys_wait1,  //part b
 [SYS_changeProcPriority] sys_changeProcPriority, // I.C. LAB 2
 [SYS_debug]   sys_debug,
-
+[SYS_page_fault] sys_page_fault,
 };
 
 void

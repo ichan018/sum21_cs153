@@ -188,6 +188,7 @@ UPROGS=\
 	_wait1nochild\
 	_pstest\
         _change_pri\
+        _page_fault_test\
 
 fs.img: mkfs README $(UPROGS)
 	./mkfs fs.img README $(UPROGS)

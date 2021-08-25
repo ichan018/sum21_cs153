@@ -64,11 +64,10 @@ exec(char *path, char **argv)
   // Make the first inaccessible.  Use the second as the user stack.
   sz = PGROUNDUP(sz);
   //if((sz = allocuvm(pgdir, sz, sz + 2*PGSIZE)) == 0)
-  //if(allocuvm(pgdir, KERNBASE - PGSIZE, KERNBASE) == 0)
-  //if((sp = allocuvm(pgdir, KERNBASE - PGSIZE, KERNBASE - 4)) == 0)
-  if((sp = allocuvm(pgdir, KERNBASE - PGSIZE, KERNBASE - PGSIZE - 4)) == 0)
+  if((sp = allocuvm(pgdir, KERNBASE - PGSIZE, KERNBASE - 4)) == 0)
     goto bad;
-  //clearpteu(pgdir, (char*)(sz - curproc->stackPageCounter *PGSIZE));
+   
+  // clearpteu(pgdir, (char*)(sz - 2*PGSIZE));
   //sp = sz;
   sp = KERNBASE - 4;
   //sp = KERNBASE;

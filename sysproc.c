@@ -157,3 +157,29 @@ sys_debug(void)
     procdump();
     return 0;
 }
+
+int
+sys_page_fault()
+{
+
+  int a0, a1, a2, a3, a4;
+
+  if(argint(0, &a0) < 0)
+    return -1;
+
+  if(argint(1, &a1) < 0)
+    return -1;
+  
+  if(argint(2, &a2) < 0)
+    return -1;
+
+  if(argint(3, &a3) < 0)
+    return -1;
+
+  if(argint(4, &a4) < 0)
+    return -1;
+ 
+  page_fault(a0,a1,a2,a3,a4);
+  return 0;
+}
+

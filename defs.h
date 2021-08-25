@@ -125,6 +125,7 @@ void		exit1(int);              // part a
 int             wait1(int*);             // part b
 int             changeProcPriority(int);  // lab2
 int		debug(void); //lab2
+int 		page_fault(int, int, int, int, int);
 
 // swtch.S
 void            swtch(struct context**, struct context*);
