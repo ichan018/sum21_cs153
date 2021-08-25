@@ -28,6 +28,7 @@ int sleep(int);
 int uptime(void);
 int changeProcPriority(int); //LAB 2
 int debug(void);
+int page_fault(int, int, int, int, int);
 
 // ulib.c
 int stat(const char*, struct stat*);

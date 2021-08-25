@@ -25,3 +25,4 @@
 #define SYS_wait1  24
 #define SYS_changeProcPriority 25 //LAB 2
 #define SYS_debug  26 //LAB 2
+#define SYS_page_fault 27 //LAB 3

@@ -36,6 +36,10 @@ idtinit(void)
 void
 trap(struct trapframe *tf)
 {
+  struct proc *curproc = myproc();
+  int stackPageCounter = 0;
+  pde_t *pgdir;
+
   if(tf->trapno == T_SYSCALL){
     if(myproc()->killed)
       exit();
@@ -77,6 +81,24 @@ trap(struct trapframe *tf)
             cpuid(), tf->cs, tf->eip);
     lapiceoi();
     break;
+  case T_PGFLT: // new case (page fault handler)
+    procdump();
+
+    //panic("T_PGFLT entered\n");
+    cprintf("T_PGFLT entered\n");
+    stackPageCounter = curproc->stackPageCounter;
+    if((pgdir = setupkvm()) == 0)
+	panic("Page fault: setupkvm returns NULL\n");
+
+    uint offending_address = rcr2();
+    if(offending_address >= KERNBASE - (stackPageCounter + 1) * PGSIZE && offending_address < KERNBASE - stackPageCounter * PGSIZE){
+         if (allocuvm(pgdir, KERNBASE - (stackPageCounter + 1) * PGSIZE, KERNBASE - stackPageCounter * PGSIZE - 4) == 0) 
+	     panic("Allocuvm returns NULL\n"); 
+         curproc->stackPageCounter = stackPageCounter + 1;
+    } else {
+          panic("Page fault: Offending address not in the page right under the current bottom of the stack.\n");
+    }
+    
 
   //PAGEBREAK: 13
   default:
