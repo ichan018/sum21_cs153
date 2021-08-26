@@ -736,14 +736,18 @@ changeProcPriority(int newPriority) {
      //printf(1, "changed to: %d", curproc->priority);
      return 0; 
 }
- 
+
+// syscall for testing page fault 
 int
 page_fault(int a0, int a1, int a2, int a3, int a4){
-   if (a0 == 0) {
+  // exit the function if the first argument is 0. 
+  if (a0 == 0) {
        cprintf("level %d\n", a0);
        exit();
    }else{
      cprintf("level %d  address %p\n", a0, &a0);
+     
+     // recursively call itself
      page_fault(a0 - 1, a1, a2, a3, a4);
    }
    return 0;

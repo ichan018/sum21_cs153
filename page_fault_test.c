@@ -1,7 +1,11 @@
 //
-// Usage: page_fault a0
-// a0 determines how many times the stack is run // explanation may be wrong
-// The numbers 2,3, 4,5 in the page_fault argument just add to the stack.
+// This example program tries to call the system call page_fault() recursively to show the stack grows correctly.
+//
+// Usage: page_fault_test a0 a1 a2 a3 a4
+// Argument a0: The number of times you want to call system call page_fault()
+// Argument a1, a2, a3, a4: Can be any arbitary integer which we just pass to page_fault() as argument to put on the stack 
+// 
+// Example: page_fault_test 1000 2 3 4 5 
 
 #include "types.h"
 #include "stat.h"
@@ -15,15 +19,11 @@ void page_fault_s(int a, int b, int c, int d, int e){
         exit();
     }else{
         printf(1, "level %d address %p\n", a, &a);
+        
+        //execute system call page_fault() recursively
         page_fault(a-1, b, c, d, e);
     }
-
-    //return 0;
 }
-
-
-
-
 
 int
 main(int argc, char *argv[])
@@ -38,7 +38,6 @@ main(int argc, char *argv[])
         printf(1, "Exiting code...\n", i);
         exit();
     }else{
-        //printf(1, "level %d\n", i);
         page_fault_s(k - 1, 2, 3, 4, 5);
     }
 
