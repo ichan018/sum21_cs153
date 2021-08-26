@@ -8,31 +8,29 @@
 #include "user.h"
 int k;
 int m = 10;
-/*
-void page_fault(int a, int b, int c, int d, int e){
-    m = m + 1;
-    if(m == k) {
-        printf(1, "level %d\n", m);
+
+void page_fault_s(int a, int b, int c, int d, int e){
+    if(a == 0) {
+        printf(1, "level %d\n", a);
         exit();
     }else{
-    //    printf(1, "level %d\n", m);
-        page_fault(1, 2, 3, 4, 5);
+        printf(1, "level %d address %p\n", a, &a);
+        page_fault(a-1, b, c, d, e);
     }
+
+    //return 0;
 }
-*/
+
+
 
 
 
 int
 main(int argc, char *argv[])
 {
-    //int parentPid;
     int i = 0; // counter for for loop
 
     printf(1, "Begin page_fault_test test\n");
-    //printf(1, "Begin change_pri test\n");
-    //parentPid = getpid();
-    //printf(1, "Parent PID:%d\n", parentPid);
 
     k = atoi(argv[1]);
     if(k == 0) {
@@ -41,7 +39,7 @@ main(int argc, char *argv[])
         exit();
     }else{
         //printf(1, "level %d\n", i);
-        page_fault(k - 1, 2, 3, 4, 5);
+        page_fault_s(k - 1, 2, 3, 4, 5);
     }
 
     exit();

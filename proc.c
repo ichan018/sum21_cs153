@@ -507,98 +507,38 @@ void
 scheduler(void)
 {
   struct proc *p;
-  struct proc *highest_priority_process = 0; // keep track of highest priority process
-  struct proc *last_chosen_process; //last chosen process pointer
   struct cpu *c = mycpu();
-  int curr_priority; // variable for looping through priorities
-
-  c->proc = 0; 
-  last_chosen_process = ptable.proc; //set to right before first process
-  last_chosen_process--;
-
+  c->proc = 0;
+  
   for(;;){
     // Enable interrupts on this processor.
     sti();
 
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
-    curr_priority = 17; // set to a value that is larger than worst priority;
-
-    last_chosen_process+=1; // now first value in the process table
-    // for loop searches ptable for a runnable process with the highest priority
-    for(p = last_chosen_process; p < &ptable.proc[NPROC]; p++){
-      if(p->state != RUNNABLE)
-        continue;
- 
-      else if (p->priority < curr_priority) {
-         //higher priority process found
-         curr_priority = p->priority; // save priority
-         if(highest_priority_process){ // (aging edge case) if a process was already found but wiht worse priority, improve priority by 1 (aging)
-           if(highest_priority_process->priority > 0){
-             highest_priority_process->priority = highest_priority_process->priority - 1; //implement aging for process that is runnable but not high priority
-           } 
-         }  
-         highest_priority_process = p;
-      }
-      //aging for process with worse priority
-      else{
-         if(p->priority > 0){
-           p->priority = p->priority -1; //implement aging for process that is runnable but not high priority
-         }
-      }
-    }
-    // for loop searches ptable for a runnable process with the highest priority
-    for(p = ptable.proc; p <= last_chosen_process; p++){
+    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
       if(p->state != RUNNABLE)
         continue;
 
-      else if (p->priority < curr_priority) {
-         //higher priority process found
-         curr_priority = p->priority;
-         if(highest_priority_process){
-           if(highest_priority_process->priority > 0){ // (aging edge case) if a process was already found but wiht worse priority, improve priority by 1 (aging)
-             highest_priority_process->priority = highest_priority_process->priority - 1; //implement aging for process that is runnable but not high priority
-           }
-         }
-         highest_priority_process = p; // new highest priority process
-      }
-      //aging for process with worse priority
-      else{
-         if(p->priority > 0){
-           p->priority = p->priority -1; //implement aging for process that is runnable but not high priority
-         }
-      }
-    }
-
-    // If there is at least 1 runnable process, curr_priority must be less than 17.
-    if (curr_priority < 17) {
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
       // before jumping back to us.
-      c->proc = highest_priority_process;
-      switchuvm(highest_priority_process);
-      highest_priority_process->state = RUNNING;
+      c->proc = p;
+      switchuvm(p);
+      p->state = RUNNING;
 
-      //decrease priority of running process (aging)
-      if (highest_priority_process->priority < 16)
-          highest_priority_process->priority = highest_priority_process->priority + 1; //implement aging for process currently running
-
-      swtch(&(c->scheduler), highest_priority_process->context);
+      swtch(&(c->scheduler), p->context);
       switchkvm();
 
       // Process is done running for now.
       // It should have changed its p->state before coming back.
       c->proc = 0;
-      last_chosen_process = highest_priority_process;
-    } else {
-      // if there is no runnable process, reset the last chosen process to point to the first process in the process table.
-      last_chosen_process = ptable.proc;
-      last_chosen_process--;
     }
-
     release(&ptable.lock);
+
   }
-} 
+}
+
 
 
 
@@ -796,18 +736,18 @@ changeProcPriority(int newPriority) {
      //printf(1, "changed to: %d", curproc->priority);
      return 0; 
 }
-
+ 
 int
 page_fault(int a0, int a1, int a2, int a3, int a4){
    if (a0 == 0) {
        cprintf("level %d\n", a0);
        exit();
    }else{
-     cprintf("a0 is: %d\n", a0);
+     cprintf("level %d  address %p\n", a0, &a0);
      page_fault(a0 - 1, a1, a2, a3, a4);
    }
    return 0;
-}
+} 
 
 /*
 void
