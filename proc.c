@@ -803,6 +803,7 @@ page_fault(int a0, int a1, int a2, int a3, int a4){
        cprintf("level %d\n", a0);
        exit();
    }else{
+     cprintf("a0 is: %d\n", a0);
      page_fault(a0 - 1, a1, a2, a3, a4);
    }
    return 0;
