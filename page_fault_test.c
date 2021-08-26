@@ -28,6 +28,8 @@ void page_fault_s(int a, int b, int c, int d, int e){
 int
 main(int argc, char *argv[])
 {
+    int i = 0; // counter for for loop
+
     printf(1, "Begin page_fault_test test\n");
 
     k = atoi(argv[1]);
